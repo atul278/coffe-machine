@@ -2,7 +2,7 @@
 
 1.  Start this Application
     -  `mvn clean install`
-    -  `mvn sping-boot:run`
+    -  `mvn spring-boot:run`
 
 2.  Entrypoint of application to test using API in postman
     -   `localhost:8080/availability`
