@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+
+/*
+    Task executioner to pour the beverages from machine parellelly
+ */
 @AllArgsConstructor
 public class TaskToExecute implements Runnable {
 
@@ -18,13 +22,15 @@ public class TaskToExecute implements Runnable {
     public void run(){
 
         AtomicInteger ingredientFound = new AtomicInteger();
-
         AtomicReference<String> message = new AtomicReference<>("");
-
         System.out.println("STARTS " + beverages.getName());
+
+        //1. Checking the the presence of ingredient one by one from coffe machine
 
         beverages.getIngredients().entrySet().forEach(ingredient -> {
             Integer available=null;
+
+            // 2.   Checking the particular ingredient in machine if preset and sufficient the pouring it .
             synchronized (machine) {
                  available = machine.getTotalAvailableIngredients().get(ingredient.getKey());
             }
@@ -43,7 +49,7 @@ public class TaskToExecute implements Runnable {
                 }
         });
 
-
+        // 3.   Checking if all the ingredient requirement is fulfilled.
         if (ingredientFound.get()==beverages.getIngredients().size()){
             response.add(beverages.getName() +"  is prepared ");
         }

@@ -12,6 +12,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -21,54 +25,76 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 public class CoffeeControllerIntegrationTest {
 
-    //TODO Add proper comments before sending
-
     @Autowired
     private MockMvc mvc;
 
     @Autowired
     private CoffeeService coffeeService;
 
-    private String requestRawJson = "{\"" +
-            "machine\": {\"" +
-                "outlets\":{\"count_n\":3},\"" +
-            "beverages\":{\"" +
-                "hot_tea\":{\"" +
-                    "hot_milk\":100,\"" +
-                    "hot_water\":200,\"" +
-                    "sugar_syrup\":10,\"" +
-                    "ginger_syrup\":10,\"" +
-                    "tea_leaves_syrup\":30},\"" +
-                "hot_coffee\":{\"" +
-                    "hot_milk\":400,\"" +
-                    "hot_water\":100,\"" +
-                    "sugar_syrup\":50,\"" +
-                    "ginger_syrup\":30,\"" +
-                    "tea_leaves_syrup\":30},\"" +
-                "black_tea\":{\"" +
-                    "hot_water\":300,\"" +
-                    "sugar_syrup\":50,\"" +
-                    "ginger_syrup\":30,\"" +
-                    "tea_leaves_syrup\":30},\"" +
-                "green_tea\":{\"" +
-                    "hot_water\":100,\"" +
-                    "sugar_syrup\":50,\"" +
-                    "ginger_syrup\":30,\"" +
-                    "green_mixture\":30}},\"" +
-            "total_items_quantity\":{\"" +
-                "hot_milk\":500,\"" +
-                "hot_water\":500,\"" +
-                "sugar_syrup\":100,\"" +
-                "ginger_syrup\":100,\"" +
-                "tea_leaves_syrup\":100}}}";
+/*
+   Test using the default data from  https://www.npoint.io/docs/e8cd5a9bbd1331de326a
+   picking from src/test/resources/dataDefault.json in this project
 
+ */
     @Test
     public void getPossibleBeverages_validRequest_thenReturnRecord() throws Exception {
 
-        ResultActions a =mvc.perform(MockMvcRequestBuilders.get("/availability")
-                .content(requestRawJson)
-                .contentType(MediaType.APPLICATION_JSON));
-        a.andDo(MockMvcResultHandlers.print());
+        InputStream is = getClass().getClassLoader().getResourceAsStream("dataDefault.json");
+        StringBuffer sb = new StringBuffer();
 
+        try (InputStreamReader streamReader =
+                     new InputStreamReader(is, StandardCharsets.UTF_8);
+             BufferedReader reader = new BufferedReader(streamReader)) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        mvc.perform(MockMvcRequestBuilders.post("/availability")
+                .content(sb.toString())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+    }
+
+
+
+/*
+   Test using the data with Large Data
+    picking from src/test/resources/dataLarge.json in this project
+
+ */
+
+    @Test
+    public void getPossibleBeveragesWithLargeData_validRequest_thenReturnRecord() throws Exception {
+
+        InputStream is = getClass().getClassLoader().getResourceAsStream("dataLarge.json");
+
+        StringBuffer sb = new StringBuffer();
+
+        try (InputStreamReader streamReader =
+                     new InputStreamReader(is, StandardCharsets.UTF_8);
+             BufferedReader reader = new BufferedReader(streamReader)) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        mvc.perform(MockMvcRequestBuilders.post("/availability")
+                .content(sb.toString())
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk());
     }
 }
